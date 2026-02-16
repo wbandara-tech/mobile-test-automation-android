@@ -1,0 +1,108 @@
+name: Android Test Automation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  ANDROID_API_LEVEL: 34
+  ANDROID_BUILD_TOOLS: "34.0.0"
+  ANDROID_TARGET: default
+  ANDROID_ABI: x86_64
+  EMULATOR_NAME: test_emulator
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android system image & create emulator
+        run: |
+          sdkmanager "system-images;android-${{ env.ANDROID_API_LEVEL }};${{ env.ANDROID_TARGET }};${{ env.ANDROID_ABI }}"
+          echo "no" | avdmanager create avd -n ${{ env.EMULATOR_NAME }} -k "system-images;android-${{ env.ANDROID_API_LEVEL }};${{ env.ANDROID_TARGET }};${{ env.ANDROID_ABI }}" --force
+
+      - name: Start Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          target: ${{ env.ANDROID_TARGET }}
+          arch: ${{ env.ANDROID_ABI }}
+          avd-name: ${{ env.EMULATOR_NAME }}
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            echo "Emulator started"
+            adb wait-for-device
+            adb shell input keyevent 82
+
+            # Install WDIO Demo App (download from GitHub releases)
+            echo "Installing WDIO Demo App..."
+            wget -q https://github.com/webdriverio/native-demo-app/releases/latest/download/android.wdio.native.app.v1.0.8.apk -O wdio-demo.apk
+            adb install wdio-demo.apk
+
+            # Install Appium UiAutomator2 driver
+            npx appium driver install uiautomator2
+
+            # Run tests
+            npm test
+
+      - name: Generate Allure Report
+        if: always()
+        run: npm run report:generate
+
+      - name: Upload Allure Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: reports/allure-results/
+          retention-days: 30
+
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: reports/allure-report/
+          retention-days: 30
+
+      - name: Upload Screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-screenshots
+          path: reports/screenshots/
+          retention-days: 14
+
+      - name: Deploy Allure Report to GitHub Pages
+        if: always() && github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: reports/allure-report
+          destination_dir: allure-report
