@@ -150,8 +150,20 @@ jobs:
         with:
           name: allure-report
           path: allure-report
+        continue-on-error: true
+
+      - name: Check report exists
+        id: check
+        run: |
+          if [ -f "allure-report/index.html" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "No allure report found to deploy"
+          fi
 
       - name: Deploy to GitHub Pages
+        if: steps.check.outputs.exists == 'true'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

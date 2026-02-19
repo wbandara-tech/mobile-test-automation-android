@@ -1,7 +1,7 @@
 # 📱 Mobile Test Automation - Android
 
 [![Android Test Automation](https://github.com/wbandara-tech/mobile-test-automation-android/actions/workflows/android-tests.yml/badge.svg)](https://github.com/wbandara-tech/mobile-test-automation-android/actions/workflows/android-tests.yml)
-[![Allure Report](https://img.shields.io/badge/Allure-Report-orange?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0wIDE4Yy00LjQyIDAtOC0zLjU4LTgtOHMzLjU4LTggOC04IDggMy41OCA4IDgtMy41OCA4LTggOHoiLz48L3N2Zz4=)](https://wbandara-tech.github.io/mobile-test-automation-android/allure-report)
+[![Allure Report](https://img.shields.io/badge/Allure-Report-orange?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0wIDE4Yy00LjQyIDAtOC0zLjU4LTgtOHMzLjU4LTggOC04IDggMy41OCA4IDgtMy41OCA4LTggOHoiLz48L3N2Zz4=)](https://wbandara-tech.github.io/mobile-test-automation-android/)
 ![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)
 ![WebDriverIO](https://img.shields.io/badge/WebDriverIO-v9-EA5906?logo=webdriverio&logoColor=white)
 ![Appium](https://img.shields.io/badge/Appium-v3-662D91?logo=appium&logoColor=white)
@@ -16,7 +16,7 @@
 | Resource | Link |
 |----------|------|
 | **GitHub Repository** | [wbandara-tech/mobile-test-automation-android](https://github.com/wbandara-tech/mobile-test-automation-android) |
-| **Allure Report (GitHub Pages)** | [Live Report](https://wbandara-tech.github.io/mobile-test-automation-android/allure-report) |
+| **Allure Report (GitHub Pages)** | [Live Report](https://wbandara-tech.github.io/mobile-test-automation-android/) |
 | **CI/CD Pipeline** | [GitHub Actions](https://github.com/wbandara-tech/mobile-test-automation-android/actions) |
 | **App Under Test** | [WDIO Demo App](https://github.com/webdriverio/native-demo-app) |
 
@@ -141,7 +141,7 @@ npm run report:open
 npm run report
 ```
 
-**Live Report:** [https://wbandara-tech.github.io/mobile-test-automation-android/allure-report](https://wbandara-tech.github.io/mobile-test-automation-android/allure-report)
+**Live Report:** [https://wbandara-tech.github.io/mobile-test-automation-android/](https://wbandara-tech.github.io/mobile-test-automation-android/)
 
 Reports include:
 - Test execution summary with pass/fail rates
