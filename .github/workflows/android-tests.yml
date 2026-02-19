@@ -66,7 +66,7 @@ jobs:
             echo "Device fully booted"
 
             # Create report directories
-            mkdir -p reports/allure-results reports/screenshots
+            mkdir -p reports/allure-results reports/screenshots reports/videos
 
             # Install WDIO Demo App (pinned to v1.0.8 - tests are written for this version)
             echo "Installing WDIO Demo App..."
@@ -75,15 +75,33 @@ jobs:
             adb install wdio-demo.apk
             echo "App installed successfully"
 
-            # Install Appium UiAutomator2 driver
-            npx appium driver install uiautomator2
+            # Install Appium UiAutomator2 driver (ignore if already installed)
+            npx appium driver install uiautomator2 || echo "UiAutomator2 driver already installed"
+
+            # Start screen recording in background
+            echo "Starting screen recording..."
+            adb shell "screenrecord --size 720x1280 --bit-rate 2000000 /sdcard/test_execution.mp4" &
+            RECORD_PID=$!
+            echo "Recording PID: $RECORD_PID"
 
             # Run tests (continue on failure so reports are generated)
             npm test || echo "Tests completed with exit code $?"
 
+            # Stop screen recording
+            echo "Stopping screen recording..."
+            kill $RECORD_PID 2>/dev/null || true
+            sleep 2
+            adb pull /sdcard/test_execution.mp4 reports/videos/test_execution.mp4 || echo "Failed to pull recording"
+            echo "Recording saved to reports/videos/"
+
       - name: Generate Allure Report
         if: always()
-        run: npm run report:generate
+        run: |
+          # Ensure report dirs exist
+          mkdir -p reports/allure-results reports/allure-report
+          # Install allure commandline if not available
+          npm list allure-commandline || npm install allure-commandline
+          npx allure generate ./reports/allure-results --clean -o ./reports/allure-report || echo "Allure report generation completed"
 
       - name: Upload Allure Results
         if: always()
@@ -92,6 +110,7 @@ jobs:
           name: allure-results
           path: reports/allure-results/
           retention-days: 30
+          if-no-files-found: warn
 
       - name: Upload Allure Report
         if: always()
@@ -100,14 +119,25 @@ jobs:
           name: allure-report
           path: reports/allure-report/
           retention-days: 30
+          if-no-files-found: warn
 
       - name: Upload Screenshots
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: failure-screenshots
           path: reports/screenshots/
           retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Upload Test Execution Video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-execution-video
+          path: reports/videos/
+          retention-days: 30
+          if-no-files-found: ignore
 
   deploy-report:
     needs: test

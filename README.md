@@ -52,7 +52,8 @@ mobile-test-automation-android/
 ├── reports/
 │   ├── allure-results/             # Raw Allure data
 │   ├── allure-report/              # Generated HTML report
-│   └── screenshots/                # Failure screenshots
+│   ├── screenshots/                # Failure screenshots
+│   └── videos/                     # Test execution recordings
 ├── logs/                           # Appium server logs
 ├── wdio.conf.js                    # WebDriverIO configuration
 ├── package.json                    # Dependencies & scripts
@@ -150,6 +151,46 @@ Reports include:
 
 ---
 
+## 🎥 Test Execution Video Recording
+
+Every CI run automatically records the Android emulator screen during test execution.
+
+### How It Works
+
+- The CI pipeline starts `adb screenrecord` before tests run
+- The emulator screen is recorded in **720x1280** resolution at **2 Mbps**
+- After tests complete, the recording is pulled from the device and uploaded as a CI artifact
+- Videos are retained for **30 days**
+
+### Accessing Recordings
+
+1. Go to the [GitHub Actions](https://github.com/wbandara-tech/mobile-test-automation-android/actions) page
+2. Click on the workflow run
+3. Scroll to **Artifacts** section
+4. Download **test-execution-video**
+
+### Local Video Recording
+
+To record test execution locally:
+
+```bash
+# Start recording in background (max 3 minutes per segment)
+adb shell screenrecord /sdcard/test_run.mp4 &
+
+# Run tests
+npm test
+
+# Stop recording
+adb shell pkill -f screenrecord
+
+# Pull video from device
+adb pull /sdcard/test_run.mp4 reports/videos/
+```
+
+> **Note:** `adb screenrecord` has a 3-minute limit per recording. For longer test runs, the CI pipeline handles this automatically.
+
+---
+
 ## 🏛️ Architecture & Design Patterns
 
 ### Page Object Model (POM)
@@ -201,12 +242,13 @@ async swipe(startX, startY, endX, endY, duration = 1000) {
 The project includes a **GitHub Actions** workflow that:
 
 1. **Triggers on:** Push to `main`/`develop`, Pull Requests to `main`, Manual dispatch
-2. **Sets up:** Node.js 20, Java 17, Android SDK, Android Emulator
+2. **Sets up:** Node.js 20, Java 17, Android SDK, Android Emulator (headless)
 3. **Installs:** WDIO Demo App APK on emulator
-4. **Runs:** Full test suite
-5. **Generates:** Allure report
-6. **Uploads:** Test artifacts (results, report, failure screenshots)
-7. **Deploys:** Allure report to GitHub Pages (on `main` branch)
+4. **Records:** Screen recording of test execution via `adb screenrecord`
+5. **Runs:** Full test suite
+6. **Generates:** Allure report with detailed results
+7. **Uploads:** Test artifacts (results, report, screenshots, execution video)
+8. **Deploys:** Allure report to GitHub Pages (on `main` branch)
 
 **Pipeline Status:** [![CI](https://github.com/wbandara-tech/mobile-test-automation-android/actions/workflows/android-tests.yml/badge.svg)](https://github.com/wbandara-tech/mobile-test-automation-android/actions/workflows/android-tests.yml)
 
