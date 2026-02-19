@@ -65,7 +65,12 @@ jobs:
 
             # Install WDIO Demo App (download from GitHub releases)
             echo "Installing WDIO Demo App..."
-            wget -q https://github.com/webdriverio/native-demo-app/releases/latest/download/android.wdio.native.app.v1.0.8.apk -O wdio-demo.apk
+            LATEST_URL=$(curl -sL -o /dev/null -w '%{url_effective}' https://github.com/webdriverio/native-demo-app/releases/latest)
+            LATEST_TAG=$(basename "$LATEST_URL")
+            echo "Latest release tag: $LATEST_TAG"
+            curl -L -o wdio-demo.apk "https://github.com/webdriverio/native-demo-app/releases/download/${LATEST_TAG}/android.wdio.native.app.${LATEST_TAG}.apk" || \
+            curl -L -o wdio-demo.apk "https://github.com/webdriverio/native-demo-app/releases/download/${LATEST_TAG}/Android-NativeDemoApp-${LATEST_TAG}.apk"
+            ls -la wdio-demo.apk
             adb install wdio-demo.apk
 
             # Install Appium UiAutomator2 driver
