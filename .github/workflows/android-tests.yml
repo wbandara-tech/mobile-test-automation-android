@@ -61,23 +61,25 @@ jobs:
           script: |
             echo "Emulator started"
             adb wait-for-device
-            adb shell input keyevent 82
+            # Wait for device to fully boot
+            adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done; input keyevent 82'
+            echo "Device fully booted"
 
-            # Install WDIO Demo App (download from GitHub releases)
+            # Create report directories
+            mkdir -p reports/allure-results reports/screenshots
+
+            # Install WDIO Demo App (pinned to v1.0.8 - tests are written for this version)
             echo "Installing WDIO Demo App..."
-            LATEST_URL=$(curl -sL -o /dev/null -w '%{url_effective}' https://github.com/webdriverio/native-demo-app/releases/latest)
-            LATEST_TAG=$(basename "$LATEST_URL")
-            echo "Latest release tag: $LATEST_TAG"
-            curl -L -o wdio-demo.apk "https://github.com/webdriverio/native-demo-app/releases/download/${LATEST_TAG}/android.wdio.native.app.${LATEST_TAG}.apk" || \
-            curl -L -o wdio-demo.apk "https://github.com/webdriverio/native-demo-app/releases/download/${LATEST_TAG}/Android-NativeDemoApp-${LATEST_TAG}.apk"
-            ls -la wdio-demo.apk
+            curl -fL -o wdio-demo.apk "https://github.com/webdriverio/native-demo-app/releases/download/v1.0.8/android.wdio.native.app.v1.0.8.apk"
+            echo "APK downloaded: $(ls -la wdio-demo.apk)"
             adb install wdio-demo.apk
+            echo "App installed successfully"
 
             # Install Appium UiAutomator2 driver
             npx appium driver install uiautomator2
 
             # Run tests (continue on failure so reports are generated)
-            npm test || echo "Tests failed with exit code $?"
+            npm test || echo "Tests completed with exit code $?"
 
       - name: Generate Allure Report
         if: always()
